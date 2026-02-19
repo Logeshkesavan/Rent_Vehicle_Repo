@@ -1,0 +1,147 @@
+<div class="container">
+  <div class="navbar">
+    <div class="nav-content">
+      <h1>Book Vehicle</h1>
+      <div class="nav-links">
+        <a routerLink="/vehicles">Browse Vehicles</a>
+        <a routerLink="/bookings">My Bookings</a>
+        @if (authService.isAdmin()) {
+          <a routerLink="/admin/dashboard">Admin Dashboard</a>
+        }
+        <button (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    @if (vehicle()) {
+      <div class="booking-container">
+        <div class="back-button">
+          <button class="btn btn-secondary" (click)="goBack()">
+            ← Back to Vehicle Details
+          </button>
+        </div>
+
+        <div class="booking-grid">
+          <!-- Vehicle Summary -->
+          <div class="vehicle-summary card">
+            <h2>Vehicle Summary</h2>
+            <div class="summary-content">
+              <div class="vehicle-image-small">
+                <div class="image-placeholder-small">
+                  {{ vehicle()!.brand }} {{ vehicle()!.model }}
+                </div>
+              </div>
+              <div class="vehicle-info-summary">
+                <h3>{{ vehicle()!.brand }} {{ vehicle()!.model }} ({{ vehicle()!.year }})</h3>
+                <p class="category">{{ vehicle()!.category }} - {{ vehicle()!.type }}</p>
+                <p class="location">📍 {{ vehicle()!.location }}</p>
+                <div class="price-info">
+                  <span class="price-label">Daily Rate:</span>
+                  <span class="price-value">₹{{ vehicle()!.pricePerDay | number:'1.0-0' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Booking Form -->
+          <div class="booking-form-card card">
+            <h2>Booking Details</h2>
+
+            @if (errorMessage()) {
+              <div class="alert alert-danger">
+                {{ errorMessage() }}
+              </div>
+            }
+
+            @if (successMessage()) {
+              <div class="alert alert-success">
+                {{ successMessage() }}
+              </div>
+            }
+
+            <form (ngSubmit)="submitBooking()" #bookingForm="ngForm">
+              <div class="form-group">
+                <label class="form-label" for="pickupDate">Pickup Date *</label>
+                <input
+                  type="date"
+                  id="pickupDate"
+                  name="pickupDate"
+                  class="form-control"
+                  [(ngModel)]="pickupDate"
+                  [min]="minDate"
+                  (change)="onDateChange()"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="returnDate">Return Date *</label>
+                <input
+                  type="date"
+                  id="returnDate"
+                  name="returnDate"
+                  class="form-control"
+                  [(ngModel)]="returnDate"
+                  [min]="pickupDate || minDate"
+                  (change)="onDateChange()"
+                  required
+                />
+              </div>
+
+              @if (totalDays() > 0) {
+                <div class="booking-summary">
+                  <h3>Booking Summary</h3>
+                  <div class="summary-row">
+                    <span>Rental Duration:</span>
+                    <span class="value">{{ totalDays() }} day{{ totalDays() > 1 ? 's' : '' }}</span>
+                  </div>
+                  <div class="summary-row">
+                    <span>Rental Amount:</span>
+                    <span class="value">₹{{ rentalAmount() | number:'1.0-0' }}</span>
+                  </div>
+                  <div class="summary-row">
+                    <span>Security Deposit:</span>
+                    <span class="value">₹{{ securityDeposit() | number:'1.0-0' }}</span>
+                  </div>
+                  <div class="summary-row total">
+                    <span>Total Amount:</span>
+                    <span class="value">₹{{ totalAmount() | number:'1.0-0' }}</span>
+                  </div>
+                  <p class="deposit-note">
+                    * Security deposit will be refunded after vehicle return
+                  </p>
+                </div>
+              }
+
+              <div class="form-actions">
+                <button 
+                  type="button" 
+                  class="btn btn-secondary"
+                  (click)="goBack()"
+                  [disabled]="submitting()"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  class="btn btn-primary"
+                  [disabled]="!bookingForm.valid || totalDays() === 0 || submitting()"
+                >
+                  @if (submitting()) {
+                    <span class="spinner"></span>
+                    Processing...
+                  } @else {
+                    Confirm Booking
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="loading">Loading vehicle information...</div>
+    }
+  </div>
+</div>
