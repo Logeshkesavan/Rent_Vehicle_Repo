@@ -1,0 +1,213 @@
+<div class="container">
+  <div class="navbar">
+    <div class="nav-content">
+      <h1>Manage Vehicles</h1>
+      <div class="nav-links">
+        <a routerLink="/admin/dashboard">Dashboard</a>
+        <a routerLink="/admin/bookings">Manage Bookings</a>
+        <a routerLink="/vehicles">Browse</a>
+        <button (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    @if (successMessage() && !showModal()) {
+      <div class="alert alert-success">
+        {{ successMessage() }}
+      </div>
+    }
+
+    @if (errorMessage() && !showModal()) {
+      <div class="alert alert-danger">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <div class="page-header">
+      <h2>Vehicle Inventory</h2>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        + Add New Vehicle
+      </button>
+    </div>
+
+    @if (loading()) {
+      <div class="loading">Loading vehicles...</div>
+    } @else {
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Vehicle</th>
+              <th>Category</th>
+              <th>Type</th>
+              <th>Year</th>
+              <th>Fuel</th>
+              <th>Location</th>
+              <th>Price/Day</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (vehicle of vehicles(); track vehicle.id) {
+              <tr>
+                <td>{{ vehicle.id }}</td>
+                <td>
+                  <strong>{{ vehicle.brand }} {{ vehicle.model }}</strong><br>
+                  <small class="text-secondary">{{ vehicle.registrationNumber }}</small>
+                </td>
+                <td>{{ vehicle.category }}</td>
+                <td>{{ vehicle.type }}</td>
+                <td>{{ vehicle.year }}</td>
+                <td>{{ vehicle.fuelType }}</td>
+                <td>{{ vehicle.location }}</td>
+                <td>₹{{ vehicle.pricePerDay | number:'1.0-0' }}</td>
+                <td>
+                  <span [ngClass]="vehicle.availabilityStatus === 'Available' ? 'badge-success' : 'badge-danger'" class="badge">
+                    {{ vehicle.availabilityStatus }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-icon btn-edit" (click)="openEditModal(vehicle)" title="Edit">
+                      ✏️
+                    </button>
+                    <button class="btn-icon btn-delete" (click)="deleteVehicle(vehicle.id, vehicle.brand + ' ' + vehicle.model)" title="Delete">
+                      🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Modal -->
+  @if (showModal()) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">{{ isEditMode() ? 'Edit Vehicle' : 'Add New Vehicle' }}</h3>
+          <button class="modal-close" (click)="closeModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+          @if (errorMessage()) {
+            <div class="alert alert-danger">
+              {{ errorMessage() }}
+            </div>
+          }
+
+          @if (successMessage()) {
+            <div class="alert alert-success">
+              {{ successMessage() }}
+            </div>
+          }
+
+          <form (ngSubmit)="submitForm()" #vehicleFormRef="ngForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Category *</label>
+                <select class="form-control form-select" [(ngModel)]="vehicleForm.category" name="category" required>
+                  @for (cat of categories; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Type *</label>
+                <input type="text" class="form-control" [(ngModel)]="vehicleForm.type" name="type" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Brand *</label>
+                <input type="text" class="form-control" [(ngModel)]="vehicleForm.brand" name="brand" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Model *</label>
+                <input type="text" class="form-control" [(ngModel)]="vehicleForm.model" name="model" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Year *</label>
+                <input type="number" class="form-control" [(ngModel)]="vehicleForm.year" name="year" required min="1990" [max]="2026">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Registration Number *</label>
+                <input type="text" class="form-control" [(ngModel)]="vehicleForm.registrationNumber" name="registrationNumber" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Fuel Type *</label>
+                <select class="form-control form-select" [(ngModel)]="vehicleForm.fuelType" name="fuelType" required>
+                  @for (fuel of fuelTypes; track fuel) {
+                    <option [value]="fuel">{{ fuel }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Transmission *</label>
+                <select class="form-control form-select" [(ngModel)]="vehicleForm.transmission" name="transmission" required>
+                  @for (trans of transmissions; track trans) {
+                    <option [value]="trans">{{ trans }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Seating Capacity *</label>
+                <input type="number" class="form-control" [(ngModel)]="vehicleForm.seatingCapacity" name="seatingCapacity" required min="1" max="50">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Location *</label>
+                <input type="text" class="form-control" [(ngModel)]="vehicleForm.location" name="location" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Price Per Day *</label>
+                <input type="number" class="form-control" [(ngModel)]="vehicleForm.pricePerDay" name="pricePerDay" required min="0">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Price Per Hour</label>
+                <input type="number" class="form-control" [(ngModel)]="vehicleForm.pricePerHour" name="pricePerHour" min="0">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Features</label>
+              <textarea class="form-control" [(ngModel)]="vehicleForm.features" name="features" rows="3"></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary" [disabled]="!vehicleFormRef.valid">
+                {{ isEditMode() ? 'Update Vehicle' : 'Create Vehicle' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+</div>
