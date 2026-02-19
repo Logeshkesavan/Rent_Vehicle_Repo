@@ -1,0 +1,69 @@
+<div class="bookings-container">
+  <div class="navbar">
+    <div class="nav-content">
+      <h1>My Bookings</h1>
+      <div class="nav-links">
+        <a routerLink="/vehicles">Browse Vehicles</a>
+        @if (authService.isAdmin()) {
+          <a routerLink="/admin/dashboard">Admin Dashboard</a>
+        }
+        <button (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    @if (isLoading()) {
+      <p class="loading">Loading bookings...</p>
+    } @else if (bookings().length === 0) {
+      <div class="no-bookings">
+        <p>No bookings yet</p>
+        <a routerLink="/vehicles" class="btn">Browse Vehicles</a>
+      </div>
+    } @else {
+      <div class="bookings-list">
+        @for (booking of bookings(); track booking.id) {
+          <div class="booking-card">
+            <div class="booking-header">
+              <h3>{{ booking.vehicleName }}</h3>
+              <span [ngClass]="'status-' + booking.status.toLowerCase()">{{ booking.status }}</span>
+            </div>
+            <div class="booking-details">
+              <div class="detail-row">
+                <span class="label">Pickup Date:</span>
+                <span>{{ booking.pickupDate | date:'dd MMM yyyy' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Return Date:</span>
+                <span>{{ booking.returnDate | date:'dd MMM yyyy' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Total Days:</span>
+                <span>{{ booking.totalDays }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Rental Amount:</span>
+                <span>₹{{ booking.rentalAmount }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Security Deposit:</span>
+                <span>₹{{ booking.securityDeposit }}</span>
+              </div>
+              <div class="detail-row total">
+                <span class="label">Total Amount:</span>
+                <span class="amount">₹{{ booking.totalAmount }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Payment Status:</span>
+                <span [ngClass]="'payment-' + booking.paymentStatus.toLowerCase()">{{ booking.paymentStatus }}</span>
+              </div>
+            </div>
+            @if (booking.status !== 'Completed' && booking.status !== 'Cancelled') {
+              <button class="cancel-btn" (click)="cancelBooking(booking.id)">Cancel Booking</button>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

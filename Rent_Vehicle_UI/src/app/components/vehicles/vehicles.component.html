@@ -1,0 +1,76 @@
+<div class="vehicles-container">
+  <div class="navbar">
+    <div class="nav-content">
+      <h1>Vehicle Rental</h1>
+      <div class="nav-links">
+        <a routerLink="/vehicles">Browse</a>
+        <a routerLink="/bookings">My Bookings</a>
+        @if (authService.isAdmin()) {
+          <a routerLink="/admin/dashboard">Admin Dashboard</a>
+        }
+        <button (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="filters">
+      <h2>Find Your Vehicle</h2>
+      <div class="filter-group">
+        <label>Category:</label>
+        <select [(ngModel)]="selectedCategory" (change)="loadVehicles()">
+          <option value="">All Categories</option>
+          <option value="Car">Cars</option>
+          <option value="Bike">Bikes</option>
+          <option value="Scooter">Scooters</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>From Date:</label>
+        <input type="date" [(ngModel)]="fromDateString" (change)="loadVehicles()" [min]="minDate" />
+      </div>
+
+      <div class="filter-group">
+        <label>To Date:</label>
+        <input type="date" [min]="minDate" [(ngModel)]="toDateString" (change)="loadVehicles()" />
+      </div>
+    </div>
+
+    <div class="vehicles-list">
+      @if (isLoading()) {
+        <p class="loading">Loading vehicles...</p>
+      } @else if (filteredVehicles().length === 0) {
+        <p class="no-data">No vehicles available</p>
+      } @else {
+        <div class="vehicles-grid">
+          @for (vehicle of filteredVehicles(); track vehicle.id) {
+            <div class="vehicle-card">
+              <div class="vehicle-header">
+                <h3>{{ vehicle.brand }} {{ vehicle.model }}</h3>
+                <span class="badge">{{ vehicle.type }}</span>
+              </div>
+              <div class="vehicle-details">
+                <p><strong>Category:</strong> {{ vehicle.category }}</p>
+                <p><strong>Year:</strong> {{ vehicle.year }}</p>
+                <p><strong>Fuel:</strong> {{ vehicle.fuelType }}</p>
+                <p><strong>Seats:</strong> {{ vehicle.seatingCapacity }}</p>
+                <p><strong>Location:</strong> {{ vehicle.location }}</p>
+                @if (vehicle.transmission) {
+                  <p><strong>Transmission:</strong> {{ vehicle.transmission }}</p>
+                }
+              </div>
+              <div class="vehicle-pricing">
+                <p class="price">₹{{ vehicle.pricePerDay }}/day</p>
+                @if (vehicle.pricePerHour) {
+                  <p class="price-small">₹{{ vehicle.pricePerHour }}/hour</p>
+                }
+              </div>
+              <button class="book-btn" (click)="bookVehicle(vehicle.id)">Book Now</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

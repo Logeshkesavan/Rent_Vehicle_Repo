@@ -1,0 +1,166 @@
+<div class="container">
+  <div class="navbar">
+    <div class="nav-content">
+      <h1>Vehicle Details</h1>
+      <div class="nav-links">
+        <a routerLink="/vehicles">Browse Vehicles</a>
+        <a routerLink="/bookings">My Bookings</a>
+        @if (authService.isAdmin()) {
+          <a routerLink="/admin/dashboard">Admin Dashboard</a>
+        }
+        <button (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    @if (loading()) {
+      <div class="loading">Loading vehicle details...</div>
+    } @else if (vehicle()) {
+      <div class="details-container">
+        <div class="details-header">
+          <button class="btn btn-secondary" (click)="goBack()">
+            ← Back to Vehicles
+          </button>
+        </div>
+
+        <div class="details-grid">
+          <div class="vehicle-image">
+            <div class="image-placeholder">
+              <span>{{ vehicle()!.brand }} {{ vehicle()!.model }}</span>
+            </div>
+          </div>
+
+          <div class="vehicle-info">
+            <div class="info-header">
+              <h2>{{ vehicle()!.brand }} {{ vehicle()!.model }} ({{ vehicle()!.year }})</h2>
+              <span class="badge badge-info">{{ vehicle()!.category }}</span>
+            </div>
+
+            <div class="info-section">
+              <h3>Vehicle Specifications</h3>
+              <div class="specs-grid">
+                <div class="spec-item">
+                  <span class="spec-label">Type:</span>
+                  <span class="spec-value">{{ vehicle()!.type }}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Fuel Type:</span>
+                  <span class="spec-value">{{ vehicle()!.fuelType }}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Transmission:</span>
+                  <span class="spec-value">{{ vehicle()!.transmission || 'N/A' }}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Seating Capacity:</span>
+                  <span class="spec-value">{{ vehicle()!.seatingCapacity }}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Registration:</span>
+                  <span class="spec-value">{{ vehicle()!.registrationNumber }}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Location:</span>
+                  <span class="spec-value">{{ vehicle()!.location }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <h3>Pricing</h3>
+              <div class="pricing-grid">
+                <div class="price-item">
+                  <span class="price-label">Per Day:</span>
+                  <span class="price-value">₹{{ vehicle()!.pricePerDay | number:'1.0-0' }}</span>
+                </div>
+                @if (vehicle()!.pricePerHour) {
+                  <div class="price-item">
+                    <span class="price-label">Per Hour:</span>
+                    <span class="price-value">₹{{ vehicle()!.pricePerHour | number:'1.0-0' }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            @if (vehicle()!.features) {
+              <div class="info-section">
+                <h3>Features</h3>
+                <p class="features-text">{{ vehicle()!.features }}</p>
+              </div>
+            }
+
+            <div class="info-section">
+              <h3>Availability</h3>
+              <div class="availability-info">
+                <p class="availability-status">
+                  <span [ngClass]="getStatusClass()" class="badge">
+                    {{ getStatusText() }}
+                  </span>
+                </p>
+                
+                @if (vehicle()!.upcomingBookings && vehicle()!.upcomingBookings!.length > 0) {
+                  <div class="booked-dates">
+                    <h4>Upcoming Bookings:</h4>
+                    @for (booking of vehicle()!.upcomingBookings; track booking.id) {
+                      <div class="booking-item" [class.confirmed]="isBookingConfirmedOrPickedUp(booking.status)">
+                        <span class="booking-dates">
+                          {{ formatDate(booking.pickupDate) }} - {{ formatDate(booking.returnDate) }}
+                        </span>
+                        <span class="booking-status badge" [ngClass]="isBookingConfirmedOrPickedUp(booking.status) ? 'badge-warning' : 'badge-info'">
+                          {{ booking.status }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="booking-section">
+              <h3>Select Rental Dates</h3>
+              <div class="date-inputs">
+                <div class="date-field">
+                  <label>From Date:</label>
+                  <input 
+                    type="date" 
+                    [(ngModel)]="selectedFromDate" 
+                    (change)="onDateChange()"
+                    [min]="minDate"
+                  />
+                </div>
+                <div class="date-field">
+                  <label>To Date:</label>
+                  <input 
+                    type="date" 
+                    [(ngModel)]="selectedToDate" 
+                    (change)="onDateChange()"
+                    [min]="selectedFromDate || minDate"
+                  />
+                </div>
+              </div>
+              
+              @if (dateError()) {
+                <p class="error-message">{{ dateError() }}</p>
+              }
+
+              <div class="action-section">
+                @if (bookingPossible()) {
+                  <button class="btn btn-primary btn-lg" (click)="bookVehicle()">
+                    Book This Vehicle
+                  </button>
+                } @else {
+                  <button class="btn btn-secondary btn-lg" disabled>
+                    Select Available Dates
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="error">Vehicle not found</div>
+    }
+  </div>
+</div>

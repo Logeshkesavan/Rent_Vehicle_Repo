@@ -1,0 +1,33 @@
+<div class="login-container">
+  <div class="login-box">
+    <h2>Vehicle Rental Login</h2>
+
+    @if (errorMessage()) {
+      <div class="error-message">{{ errorMessage() }}</div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+      <div class="form-group">
+        <label>Email:</label>
+        <input type="email" formControlName="email" required />
+      </div>
+
+      <div class="form-group">
+        <label>Password:</label>
+        <input type="password" formControlName="password" required />
+      </div>
+
+      <button type="submit" [disabled]="isLoading()">
+        {{ isLoading() ? 'Logging in...' : 'Login' }}
+      </button>
+    </form>
+
+    <p>Don't have an account? <a routerLink="/register">Register here</a></p>
+
+    <!-- <div class="demo-credentials">
+      <h4>Demo Credentials:</h4>
+      <p><strong>Admin:</strong> admin@vehiclerental.com / Admin@123</p>
+      <p><strong>Customer:</strong> john@example.com / Customer@123</p>
+    </div> -->
+  </div>
+</div>

@@ -1,0 +1,46 @@
+<div class="register-container">
+  <div class="register-box">
+    <h2>Create Account</h2>
+
+    @if (successMessage()) {
+      <div class="success-message">{{ successMessage() }}</div>
+    }
+
+    @if (errorMessage()) {
+      <div class="error-message">{{ errorMessage() }}</div>
+    }
+
+    <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+      <div class="form-group">
+        <label>Name:</label>
+        <input type="text" formControlName="name" required />
+      </div>
+
+      <div class="form-group">
+        <label>Email:</label>
+        <input type="email" formControlName="email" required />
+      </div>
+
+      <div class="form-group">
+        <label>Phone (Optional):</label>
+        <input type="tel" formControlName="phone" />
+      </div>
+
+      <div class="form-group">
+        <label>Password:</label>
+        <input type="password" formControlName="password" required />
+      </div>
+
+      <div class="form-group">
+        <label>Confirm Password:</label>
+        <input type="password" formControlName="confirmPassword" required />
+      </div>
+
+      <button type="submit" [disabled]="isLoading()">
+        {{ isLoading() ? 'Registering...' : 'Register' }}
+      </button>
+    </form>
+
+    <p>Already have an account? <a routerLink="/login">Login here</a></p>
+  </div>
+</div>

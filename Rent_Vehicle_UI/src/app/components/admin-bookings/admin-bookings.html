@@ -1,0 +1,121 @@
+<div class="container">
+  <div class="navbar">
+    <div class="nav-content">
+      <h1>Manage Bookings</h1>
+      <div class="nav-links">
+        <a routerLink="/admin/dashboard">Dashboard</a>
+        <a routerLink="/admin/vehicles">Manage Vehicles</a>
+        <a routerLink="/vehicles">Browse</a>
+        <button (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    @if (successMessage()) {
+      <div class="alert alert-success">
+        {{ successMessage() }}
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <div class="page-header">
+      <h2>All Bookings</h2>
+      <div class="filter-section">
+        <label class="filter-label">Filter by Status:</label>
+        <select class="filter-select" [(ngModel)]="selectedStatus" (change)="filterByStatus()">
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ status }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="loading">Loading bookings...</div>
+    } @else {
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Customer</th>
+              <th>Vehicle</th>
+              <th>Pickup Date</th>
+              <th>Return Date</th>
+              <th>Days</th>
+              <th>Total Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (filteredBookings().length === 0) {
+              <tr>
+                <td colspan="10" class="no-data">No bookings found</td>
+              </tr>
+            }
+            @for (booking of filteredBookings(); track booking.id) {
+              <tr>
+                <td><strong>#{{ booking.id }}</strong></td>
+                <td>
+                  @if (booking.userName) {
+                    <div>{{ booking.userName }}</div>
+                    <small class="text-secondary">{{ booking.userEmail }}</small>
+                  } @else {
+                    User #{{ booking.userId }}
+                  }
+                </td>
+                <td>{{ booking.vehicleName }}</td>
+                <td>{{ booking.pickupDate | date:'shortDate' }}</td>
+                <td>{{ booking.returnDate | date:'shortDate' }}</td>
+                <td>{{ booking.totalDays }}</td>
+                <td>₹{{ booking.totalAmount | number:'1.0-0' }}</td>
+                <td>
+                  <span [ngClass]="getPaymentStatusClass(booking.paymentStatus)" class="badge">
+                    {{ booking.paymentStatus }}
+                  </span>
+                </td>
+                <td>
+                  <span [ngClass]="getStatusClass(booking.status)" class="badge">
+                    {{ booking.status }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    @if (booking.status === 'Pending') {
+                      <button class="btn-sm btn-success" (click)="updateBookingStatus(booking.id, 'Confirmed')">
+                        Confirm
+                      </button>
+                    }
+                    @if (booking.status === 'Confirmed') {
+                      <button class="btn-sm btn-info" (click)="updateBookingStatus(booking.id, 'PickedUp')">
+                        Picked Up
+                      </button>
+                    }
+                    @if (booking.status === 'PickedUp') {
+                      <button class="btn-sm btn-success" (click)="updateBookingStatus(booking.id, 'Completed')">
+                        Complete
+                      </button>
+                    }
+                    @if (booking.status !== 'Cancelled' && booking.status !== 'Completed') {
+                      <button class="btn-sm btn-danger" (click)="updateBookingStatus(booking.id, 'Cancelled')">
+                        Cancel
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

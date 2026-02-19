@@ -1,0 +1,135 @@
+<div class="dashboard-container">
+  <div class="navbar">
+    <div class="nav-content">
+      <h1>Admin Dashboard</h1>
+      <div class="nav-links">
+        <a routerLink="/admin/vehicles">Manage Vehicles</a>
+        <a routerLink="/admin/bookings">Manage Bookings</a>
+        <a routerLink="/vehicles">Browse</a>
+        <button (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Real-Time Stats Section -->
+    <div class="section-header">
+      <h2>Today's Activity (Real-Time)</h2>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card stat-highlight">
+        <h3>Today's Pickups</h3>
+        <p class="stat-value stat-pickup">{{ realTimeStats().todayPickups }}</p>
+      </div>
+      <div class="stat-card stat-highlight">
+        <h3>Today's Returns</h3>
+        <p class="stat-value stat-return">{{ realTimeStats().todayReturns }}</p>
+      </div>
+      <div class="stat-card stat-highlight">
+        <h3>Vehicles Rented</h3>
+        <p class="stat-value stat-rented">{{ realTimeStats().vehiclesRented }}</p>
+      </div>
+      <div class="stat-card stat-highlight">
+        <h3>Vehicles Available</h3>
+        <p class="stat-value stat-available">{{ realTimeStats().vehiclesAvailable }}</p>
+      </div>
+      <div class="stat-card stat-highlight">
+        <h3>Pending Bookings</h3>
+        <p class="stat-value stat-pending">{{ realTimeStats().pendingBookings }}</p>
+      </div>
+      <div class="stat-card stat-highlight">
+        <h3>Expected Revenue Today</h3>
+        <p class="stat-value">₹{{ realTimeStats().expectedRevenueToday | number:'1.0-0' }}</p>
+      </div>
+    </div>
+
+    <!-- Overall Stats Section -->
+    <div class="section-header">
+      <h2>Overall Statistics</h2>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Bookings</h3>
+        <p class="stat-value">{{ stats().totalBookings }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Active Rentals</h3>
+        <p class="stat-value">{{ stats().activeRentals }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Total Revenue</h3>
+        <p class="stat-value">₹{{ stats().totalRevenue | number:'1.0-0' }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Total Vehicles</h3>
+        <p class="stat-value">{{ stats().totalVehicles }}</p>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h2>Vehicle Utilization Chart (Last 30 Days)</h2>
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="barChartData"
+            [options]="barChartOptions"
+            type="bar">
+          </canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h2>Revenue Breakdown by Category</h2>
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="pieChartData"
+            [options]="pieChartOptions"
+            type="doughnut">
+          </canvas>
+        </div>
+        <div class="revenue-details">
+          @for (item of revenueByCategory(); track item.category) {
+            <div class="revenue-item">
+              <span class="category-name">{{ item.category }}</span>
+              <span class="category-revenue">₹{{ item.revenue | number:'1.0-0' }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="utilization-section">
+      <h2>Vehicle Utilization Details (Last 30 Days)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Vehicle Name</th>
+            <th>Category</th>
+            <th>Total Bookings</th>
+            <th>Days Booked</th>
+            <th>Utilization %</th>
+            <th>Revenue</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (vehicle of vehicleUtilization(); track vehicle.vehicleId) {
+            <tr>
+              <td>{{ vehicle.vehicleName }}</td>
+              <td>{{ vehicle.category }}</td>
+              <td>{{ vehicle.totalBookings }}</td>
+              <td>{{ vehicle.daysBooked }}</td>
+              <td class="util-cell">
+                <span [ngClass]="getUtilizationClass(vehicle.utilizationPercentage)">
+                  {{ vehicle.utilizationPercentage }}%
+                </span>
+              </td>
+              <td>₹{{ vehicle.revenueGenerated | number:'1.0-2' }}</td>
+              <td>{{ getUtilizationStatus(vehicle.utilizationPercentage) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
