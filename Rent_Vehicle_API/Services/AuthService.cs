@@ -19,6 +19,7 @@ public interface IAuthService
     Task<bool> ValidateRefreshTokenAsync(int userId, string token);
     Task RevokeRefreshTokenAsync(int userId);
     Task RevokeSpecificRefreshTokenAsync(string tokenString);
+    Task<int?> GetUserIdByEmailAsync(string email);
 }
 
 public class AuthService : IAuthService
@@ -224,5 +225,11 @@ public class AuthService : IAuthService
             refreshToken.IsRevoked = true;
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<int?> GetUserIdByEmailAsync(string email)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        return user?.Id;
     }
 }

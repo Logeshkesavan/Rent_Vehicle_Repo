@@ -17,6 +17,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<VehicleRentalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services
+    .AddMcpServer()
+    .WithHttpTransport()
+    .WithToolsFromAssembly(typeof(Program).Assembly);
+
 // Configure JWT Settings
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
     ?? throw new InvalidOperationException("JwtSettings not found in configuration");
@@ -45,7 +50,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Add Authorization
-//builder.Services.AddAuthorization();
+builder.Services.AddAuthorization();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -61,7 +66,10 @@ builder.Services.AddCors(options =>
 
 // Add Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddHttpContextAccessor();
+
 
 var app = builder.Build();
 
@@ -87,5 +95,5 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
+app.MapMcp("/mcp");  //.RequireAuthorization();
 app.Run();

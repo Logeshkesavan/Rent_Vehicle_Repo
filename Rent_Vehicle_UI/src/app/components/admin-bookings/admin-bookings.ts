@@ -42,7 +42,7 @@ export class AdminBookings implements OnInit {
   loadAllBookings(): void {
     this.loading.set(true);
     // Using HttpClient directly - /api/bookings returns all bookings for admin
-    this.http.get<AdminBooking[]>('http://localhost:5235/api/bookings').subscribe({
+    this.http.get<AdminBooking[]>('http://localhost:6001/api/bookings').subscribe({
       next: (data) => {
         this.bookings.set(data);
         this.filteredBookings.set(data);

@@ -177,14 +177,20 @@ public class AuthController : ControllerBase
             return Unauthorized(new AuthResponse { Success = false, Message = "Invalid token" });
         }
 
-        var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!int.TryParse(userIdClaim, out int userId))
+        var emailClaim = principal.FindFirst(ClaimTypes.Email)?.Value;
+        if (string.IsNullOrEmpty(emailClaim))
+        {
+            return Unauthorized(new AuthResponse { Success = false, Message = "Invalid token claims" });
+        }
+
+        var userId = await _authService.GetUserIdByEmailAsync(emailClaim);
+        if (userId == null)
         {
             return Unauthorized(new AuthResponse { Success = false, Message = "Invalid token claims" });
         }
 
         // Validate refresh token
-        var isValidRefreshToken = await _authService.ValidateRefreshTokenAsync(userId, request.RefreshToken);
+        var isValidRefreshToken = await _authService.ValidateRefreshTokenAsync(userId.Value, request.RefreshToken);
         if (!isValidRefreshToken)
         {
             return Unauthorized(new AuthResponse { Success = false, Message = "Invalid or expired refresh token" });
@@ -242,10 +248,14 @@ public class AuthController : ControllerBase
             
             if (principal != null)
             {
-                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (int.TryParse(userIdClaim, out int extractedUserId))
+                var emailClaim = principal.FindFirst(ClaimTypes.Email)?.Value;
+                if (!string.IsNullOrEmpty(emailClaim))
                 {
-                    userId = extractedUserId;
+                    var extractedUserId = await _authService.GetUserIdByEmailAsync(emailClaim);
+                    if (extractedUserId.HasValue)
+                    {
+                        userId = extractedUserId.Value;
+                    }
                 }
             }
         }

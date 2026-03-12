@@ -18,6 +18,10 @@ public class VehicleDto
     public string AvailabilityStatus { get; set; } = string.Empty;
     public string? Images { get; set; }
     public string? Features { get; set; }
+
+    // Availability warnings (e.g., pending bookings for the searched date range)
+    public bool HasPendingConflicts { get; set; }
+    public string? Message { get; set; }
 }
 
 // Enhanced Vehicle Detail DTO with availability info

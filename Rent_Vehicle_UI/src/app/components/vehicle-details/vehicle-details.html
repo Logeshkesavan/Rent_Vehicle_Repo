@@ -144,6 +144,10 @@
                 <p class="error-message">{{ dateError() }}</p>
               }
 
+              @if (dateWarning()) {
+                <p class="warning-message">{{ dateWarning() }}</p>
+              }
+
               <div class="action-section">
                 @if (bookingPossible()) {
                   <button class="btn btn-primary btn-lg" (click)="bookVehicle()">
