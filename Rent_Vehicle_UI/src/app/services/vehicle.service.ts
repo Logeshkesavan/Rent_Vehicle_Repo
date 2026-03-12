@@ -19,6 +19,10 @@ export interface Vehicle {
   availabilityStatus: string;
   images?: string;
   features?: string;
+
+  // Optional availability warnings (returned for date-range searches)
+  hasPendingConflicts?: boolean;
+  message?: string;
 }
 
 export interface VehicleDetail extends Vehicle {
@@ -73,7 +77,7 @@ export interface CreateVehicleRequest {
   providedIn: 'root'
 })
 export class VehicleService {
-  private apiUrl = 'http://localhost:5235/api/vehicles';
+  private apiUrl = 'http://localhost:6001/api/vehicles';
 
   constructor(private http: HttpClient) { }
 

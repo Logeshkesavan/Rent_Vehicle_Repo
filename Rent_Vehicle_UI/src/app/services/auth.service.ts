@@ -25,7 +25,7 @@ export interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService implements OnDestroy {
-  private apiUrl = 'http://localhost:5235/api/auth';
+  private apiUrl = 'http://localhost:6001/api/auth';
   public currentUser = signal<User | null>(null);
   public isAuthenticated = signal<boolean>(false);
   private platformId = inject(PLATFORM_ID);

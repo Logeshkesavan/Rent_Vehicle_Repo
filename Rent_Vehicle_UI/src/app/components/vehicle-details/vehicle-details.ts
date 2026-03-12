@@ -20,6 +20,7 @@ export class VehicleDetails implements OnInit {
   selectedFromDate = '';
   selectedToDate = '';
   dateError = signal('');
+  dateWarning = signal('');
   bookingPossible = signal(false);
 
   minDate: string = '';
@@ -81,24 +82,39 @@ export class VehicleDetails implements OnInit {
 
     if (toDate <= fromDate) {
       this.dateError.set('Return date must be after pickup date');
+      this.dateWarning.set('');
       this.bookingPossible.set(false);
       return;
     }
 
-    // Check if selected dates overlap with any upcoming bookings
-    const hasConflict = vehicle.upcomingBookings.some(booking => {
+    this.dateError.set('');
+    this.dateWarning.set('');
+
+    const hasBlockingConflict = vehicle.upcomingBookings.some(booking => {
+      if (!this.isBookingConfirmedOrPickedUp(booking.status)) return false;
       const bookingStart = new Date(booking.pickupDate);
       const bookingEnd = new Date(booking.returnDate);
       return fromDate < bookingEnd && toDate > bookingStart;
     });
 
-    if (hasConflict) {
+    if (hasBlockingConflict) {
       this.dateError.set('Vehicle is not available for the selected dates');
       this.bookingPossible.set(false);
-    } else {
-      this.dateError.set('');
-      this.bookingPossible.set(true);
+      return;
     }
+
+    const hasPendingConflict = vehicle.upcomingBookings.some(booking => {
+      if (booking.status !== 'Pending') return false;
+      const bookingStart = new Date(booking.pickupDate);
+      const bookingEnd = new Date(booking.returnDate);
+      return fromDate < bookingEnd && toDate > bookingStart;
+    });
+
+    if (hasPendingConflict) {
+      this.dateWarning.set('This vehicle has a pending booking for the selected dates. Admin may confirm another booking, so availability is not guaranteed.');
+    }
+
+    this.bookingPossible.set(true);
   }
 
   bookVehicle(): void {

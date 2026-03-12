@@ -66,6 +66,9 @@
                   <p class="price-small">₹{{ vehicle.pricePerHour }}/hour</p>
                 }
               </div>
+              @if (vehicle.hasPendingConflicts && vehicle.message) {
+                <p class="pending-warning">{{ vehicle.message }}</p>
+              }
               <button class="book-btn" (click)="bookVehicle(vehicle.id)">Book Now</button>
             </div>
           }

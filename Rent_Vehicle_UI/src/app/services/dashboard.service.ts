@@ -32,7 +32,7 @@ export interface VehicleUtilization {
   providedIn: 'root'
 })
 export class DashboardService {
-  private apiUrl = 'http://localhost:5235/api/dashboard';
+  private apiUrl = 'http://localhost:6001/api/dashboard';
 
   constructor(private http: HttpClient) { }
 

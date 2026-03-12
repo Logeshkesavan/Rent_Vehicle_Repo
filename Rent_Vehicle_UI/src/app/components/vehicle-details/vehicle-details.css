@@ -277,6 +277,12 @@
   margin: var(--spacing-sm) 0;
 }
 
+.warning-message {
+  color: var(--warning-dark);
+  font-size: var(--font-sm);
+  margin: var(--spacing-sm) 0;
+}
+
 .action-section {
   margin-top: var(--spacing-lg);
   padding-top: var(--spacing-lg);

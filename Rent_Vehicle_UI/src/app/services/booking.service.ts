@@ -31,7 +31,7 @@ export interface UpdateBookingStatusRequest {
   providedIn: 'root'
 })
 export class BookingService {
-  private apiUrl = 'http://localhost:5235/api/bookings';
+  private apiUrl = 'http://localhost:6001/api/bookings';
 
   constructor(private http: HttpClient) { }
 

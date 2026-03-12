@@ -156,6 +156,16 @@ input {
   margin: 5px 0 0;
 }
 
+.pending-warning {
+  margin: 0 15px 10px;
+  padding: 10px;
+  background: #fff3cd;
+  color: #856404;
+  border-radius: 5px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .book-btn {
   width: calc(100% - 30px);
   margin: 0 15px 15px;
