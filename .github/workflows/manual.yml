@@ -26,6 +26,9 @@ jobs:
         working-directory: Rent_Vehicle_UI
         run: npm run build -- --configuration production
 
+      - name: Rename Angular CSR index file
+        run: cp Rent_Vehicle_UI/dist/Rent_Vehicle_UI/browser/index.csr.html Rent_Vehicle_UI/dist/Rent_Vehicle_UI/browser/index.html
+
       - name: Show build output
         working-directory: Rent_Vehicle_UI
         run: ls -R dist
