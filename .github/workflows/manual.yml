@@ -36,5 +36,5 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
           local-dir: Rent_Vehicle_UI/dist/Rent_Vehicle_UI/browser/
-          server-dir: /
+          server-dir: /htdocs/
           dangerous-clean-slate: true
