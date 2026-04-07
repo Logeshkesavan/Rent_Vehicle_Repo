@@ -15,18 +15,21 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
 
       - name: Build Angular app
         run: npm run build -- --configuration production
+
+      - name: Show build output
+        run: ls -R dist
 
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -35,6 +38,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
+          protocol: ftps
           local-dir: Rent_Vehicle_UI/dist/Rent_Vehicle_UI/browser/
           server-dir: /htdocs/
           dangerous-clean-slate: true
