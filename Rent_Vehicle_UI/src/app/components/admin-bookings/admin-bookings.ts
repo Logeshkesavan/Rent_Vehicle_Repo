@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { BookingService, Booking } from '../../services/booking.service';
 import { AuthService } from '../../services/auth.service';
+import { ApiConfig } from '../../config/api.config';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -32,7 +33,8 @@ export class AdminBookings implements OnInit {
   constructor(
     private http: HttpClient,
     private bookingService: BookingService,
-    public authService: AuthService
+    public authService: AuthService,
+    private apiConfig: ApiConfig
   ) {}
 
   ngOnInit(): void {
@@ -42,7 +44,7 @@ export class AdminBookings implements OnInit {
   loadAllBookings(): void {
     this.loading.set(true);
     // Using HttpClient directly - /api/bookings returns all bookings for admin
-    this.http.get<AdminBooking[]>('http://localhost:6001/api/bookings').subscribe({
+    this.http.get<AdminBooking[]>(this.apiConfig.getBookingsUrl()).subscribe({
       next: (data) => {
         this.bookings.set(data);
         this.filteredBookings.set(data);

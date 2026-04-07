@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiConfig } from '../config/api.config';
 
 export interface DashboardStats {
   totalBookings: number;
@@ -32,9 +33,11 @@ export interface VehicleUtilization {
   providedIn: 'root'
 })
 export class DashboardService {
-  private apiUrl = 'http://localhost:6001/api/dashboard';
+  private apiUrl: string;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private apiConfig: ApiConfig) {
+    this.apiUrl = this.apiConfig.getDashboardUrl();
+  }
 
   getDashboardStats(): Observable<DashboardStats> {
     return this.http.get<DashboardStats>(`${this.apiUrl}/stats`);

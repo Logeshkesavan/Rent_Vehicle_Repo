@@ -3,11 +3,15 @@ name: Deploy Angular App via FTP
 on:
   push:
     branches:
-      - develop   # change if your branch is different
+      - develop
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Rent_Vehicle_UI
 
     steps:
       - name: Checkout repository
@@ -19,14 +23,10 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: |
-          cd Rent_Vehicle_UI
-          npm install
+        run: npm install
 
       - name: Build Angular app
-        run: |
-          cd Rent_Vehicle_UI
-          npm run build -- --configuration production
+        run: npm run build -- --configuration production
 
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -35,5 +35,6 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          local-dir: Rent_Vehicle_UI/dist/
+          local-dir: Rent_Vehicle_UI/dist/Rent_Vehicle_UI/browser/
           server-dir: /
+          dangerous-clean-slate: true

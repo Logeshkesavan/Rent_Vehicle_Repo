@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiConfig } from '../config/api.config';
 
 export interface Vehicle {
   id: number;
@@ -77,9 +78,11 @@ export interface CreateVehicleRequest {
   providedIn: 'root'
 })
 export class VehicleService {
-  private apiUrl = 'http://localhost:6001/api/vehicles';
+  private apiUrl: string;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private apiConfig: ApiConfig) {
+    this.apiUrl = this.apiConfig.getVehiclesUrl();
+  }
 
   getVehicles(category?: string, fromDate?: Date, toDate?: Date): Observable<Vehicle[]> {
     let url = this.apiUrl;
