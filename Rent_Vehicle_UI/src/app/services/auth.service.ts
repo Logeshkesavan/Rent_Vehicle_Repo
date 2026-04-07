@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, throwError, interval, Subscription } from 'rxjs';
 import { of } from 'rxjs';
+import { ApiConfig } from '../config/api.config';
 
 export interface User {
   id: number;
@@ -25,7 +26,7 @@ export interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService implements OnDestroy {
-  private apiUrl = 'http://localhost:6001/api/auth';
+  private apiUrl: string;
   public currentUser = signal<User | null>(null);
   public isAuthenticated = signal<boolean>(false);
   private platformId = inject(PLATFORM_ID);
@@ -39,7 +40,8 @@ export class AuthService implements OnDestroy {
   // This is 1 minute before the token expires (token expires in 2 minutes)
   private readonly refreshThreshold = 60 * 1000; 
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private http: HttpClient, private router: Router, private apiConfig: ApiConfig) {
+    this.apiUrl = this.apiConfig.getAuthUrl();
     this.checkAuthStatus();
   }
 

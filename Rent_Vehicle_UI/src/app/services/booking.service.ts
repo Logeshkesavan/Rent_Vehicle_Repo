@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiConfig } from '../config/api.config';
 
 export interface Booking {
   id: number;
@@ -31,9 +32,11 @@ export interface UpdateBookingStatusRequest {
   providedIn: 'root'
 })
 export class BookingService {
-  private apiUrl = 'http://localhost:6001/api/bookings';
+  private apiUrl: string;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private apiConfig: ApiConfig) {
+    this.apiUrl = this.apiConfig.getBookingsUrl();
+  }
 
   getBookings(): Observable<Booking[]> {
     return this.http.get<Booking[]>(this.apiUrl);
