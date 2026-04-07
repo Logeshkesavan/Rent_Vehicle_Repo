@@ -29,14 +29,20 @@ jobs:
       - name: Show build output
         run: find Rent_Vehicle_UI/dist -type f
 
-      - name: Rename Angular CSR index file
-        run: |
-          find Rent_Vehicle_UI/dist -name "index.csr.html" -exec sh -c 'cp "$1" "$(dirname "$1")/index.html"' _ {} \;
-
-      - name: Create .htaccess for Angular routing
+      - name: Prepare deploy folder
         run: |
           BROWSER_DIR=$(find Rent_Vehicle_UI/dist -type d -name browser | head -n 1)
-          cat > "$BROWSER_DIR/.htaccess" << 'EOF'
+          echo "Browser dir: $BROWSER_DIR"
+
+          mkdir -p deploy
+
+          cp -r "$BROWSER_DIR/"* deploy/
+
+          if [ -f "$BROWSER_DIR/index.csr.html" ]; then
+            cp "$BROWSER_DIR/index.csr.html" deploy/index.html
+          fi
+
+          cat > deploy/.htaccess << 'EOF'
           <IfModule mod_rewrite.c>
             RewriteEngine On
             RewriteBase /
@@ -47,6 +53,9 @@ jobs:
           </IfModule>
           EOF
 
+          echo "Deploy folder contents:"
+          ls -la deploy
+
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -55,6 +64,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
           protocol: ftp
-          local-dir: Rent_Vehicle_UI/dist/Rent_Vehicle_UI/browser/
+          local-dir: deploy/
           server-dir: /htdocs/
           dangerous-clean-slate: true
