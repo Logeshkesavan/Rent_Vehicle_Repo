@@ -9,10 +9,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: Rent_Vehicle_UI
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,12 +19,15 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
+        working-directory: Rent_Vehicle_UI
         run: npm install
 
       - name: Build Angular app
+        working-directory: Rent_Vehicle_UI
         run: npm run build -- --configuration production
 
       - name: Show build output
+        working-directory: Rent_Vehicle_UI
         run: ls -R dist
 
       - name: Deploy to FTP
@@ -38,7 +37,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          protocol: ftps
+          protocol: ftp
           local-dir: Rent_Vehicle_UI/dist/Rent_Vehicle_UI/browser/
           server-dir: /htdocs/
           dangerous-clean-slate: true
