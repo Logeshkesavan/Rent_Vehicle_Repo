@@ -84,11 +84,3 @@ jobs:
           local-dir: Rent_Vehicle_API/publish/
           server-dir: /wwwroot/               # MonsterASP backend root
           dangerous-clean-slate: true
-
-      # 🔟 Bring app back online
-      - name: Bring app back online
-        run: |
-          curl --silent --show-error \
-            --user "${{ secrets.FTP_USERNAME_API }}:${{ secrets.FTP_PASSWORD_API }}" \
-            -Q "DELE /wwwroot/app_offline.htm" \
-            "ftp://site62384.siteasp.net/"
