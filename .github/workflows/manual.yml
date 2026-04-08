@@ -10,38 +10,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node.js
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         working-directory: Rent_Vehicle_UI
         run: npm install
 
+      # 4️⃣ Build Angular app
       - name: Build Angular app
         working-directory: Rent_Vehicle_UI
         run: npm run build -- --configuration production
 
+      # 5️⃣ Show build output
       - name: Show build output
         run: find Rent_Vehicle_UI/dist -type f
 
-      - name: Add .htaccess for Angular routing
+      # 6️⃣ Add .htaccess for Angular routing
+      - name: Add .htaccess
         run: |
+          mkdir -p Rent_Vehicle_UI/dist/Rent_Vehicle_UI
           cat > Rent_Vehicle_UI/dist/Rent_Vehicle_UI/.htaccess << 'EOF'
-<IfModule mod_rewrite.c>
-RewriteEngine On
-RewriteBase /
-RewriteRule ^index\.html$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.html [L]
-</IfModule>
-EOF
+          <IfModule mod_rewrite.c>
+          RewriteEngine On
+          RewriteBase /
+          RewriteRule ^index\.html$ - [L]
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule . /index.html [L]
+          </IfModule>
+          EOF
 
+      # 7️⃣ Deploy to FTP
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
