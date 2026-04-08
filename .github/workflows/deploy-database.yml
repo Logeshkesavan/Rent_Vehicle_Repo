@@ -1,0 +1,59 @@
+name: Deploy Database to Azure SQL
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'Rent_Vehicle_Database/**'
+      - '.github/workflows/deploy-database.yml'
+
+jobs:
+  deploy-database:
+    name: Deploy Database to Azure SQL
+    runs-on: windows-latest
+
+    steps:
+      # 1️⃣ Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup MSBuild
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      # 3️⃣ Build Database Project (.sqlproj)  
+      - name: Build Database Project
+        run: |
+          msbuild Rent_Vehicle_Database\Rent_Vehicle_Database.sqlproj `
+            /p:Configuration=Release `
+            /p:SqlPublishProfilePath="Rent_Vehicle_Database\Rent_Vehicle_Database.publish.xml" `
+            /m
+
+      # 4️⃣ Show build output
+      - name: Show build output
+        run: dir Rent_Vehicle_Database\bin\Release\*.dacpac
+
+      # 5️⃣ Deploy Database to Azure SQL
+      - name: Deploy Database to Azure SQL
+        run: |
+          $ConnectionString = "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
+          $DacpacPath = "Rent_Vehicle_Database\bin\Release\Rent_Vehicle_Database.dacpac"
+          
+          sqlpackage.exe /Action:Publish `
+            /SourceFile:"$DacpacPath" `
+            /TargetConnectionString:"$ConnectionString" `
+            /AllowIncompatiblePlatform `
+            /Variables:BuildConfiguration=Release
+
+      # 6️⃣ Deployment summary
+      - name: Deployment summary
+        if: success()
+        shell: bash
+        run: |
+          echo "### Database Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** Success ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target:** Azure SQL Database (VehicleRentalDB)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY

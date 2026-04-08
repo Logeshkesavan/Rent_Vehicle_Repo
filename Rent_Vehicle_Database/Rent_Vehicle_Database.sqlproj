@@ -6,14 +6,14 @@
     <Name>Rent_Vehicle_Database</Name>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
-    <ProjectGuid>12345678-1234-1234-1234-123456789012</ProjectGuid>
+    <ProjectGuid>{12345678-1234-1234-1234-123456789012}</ProjectGuid>
     <DSP>Microsoft.Data.Tools.Schema.Sql.Sql150DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath>
     </RootPath>
     <RootNamespace>Rent_Vehicle_Database</RootNamespace>
     <AssemblyName>Rent_Vehicle_Database</AssemblyName>
-    <ModelCollation>1033, CI</ModelCollation>
+    <ModelCollation>1033,CI</ModelCollation>
     <DefaultFileStructureProvider>SqlProject</DefaultFileStructureProvider>
     <DeployToDatabase>True</DeployToDatabase>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -25,6 +25,11 @@
     <AllowSnapshotIsolation>False</AllowSnapshotIsolation>
     <IncludeCompositeObjects>False</IncludeCompositeObjects>
     <PermissionLevel>PUBLIC</PermissionLevel>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <TargetFrameworkProfile />
+    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>.\sql\release\</OutputPath>
@@ -45,4 +50,13 @@
     <PreDeploy Include="Scripts\Script.PreDeployment.sql" />
     <PostDeploy Include="Scripts\Script.PostDeployment.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\Tables\Users.sql" />
+    <Build Include="dbo\Tables\Vehicles.sql" />
+    <Build Include="dbo\Tables\Bookings.sql" />
+    <Build Include="dbo\Tables\Payments.sql" />
+    <Build Include="dbo\Tables\RefreshTokens.sql" />
+    <Build Include="dbo\Tables\__EFMigrationsHistory.sql" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
 </Project>
