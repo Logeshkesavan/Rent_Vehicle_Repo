@@ -35,21 +35,27 @@ jobs:
           echo "Browser dir: $BROWSER_DIR"
 
           mkdir -p deploy
-
           cp -r "$BROWSER_DIR/"* deploy/
 
-          if [ -f "$BROWSER_DIR/index.csr.html" ]; then
+          # ✅ Ensure index.html exists (handles both cases)
+          if [ -f "$BROWSER_DIR/index.html" ]; then
+            echo "index.html exists"
+          elif [ -f "$BROWSER_DIR/index.csr.html" ]; then
             cp "$BROWSER_DIR/index.csr.html" deploy/index.html
+            echo "Renamed index.csr.html → index.html"
+          else
+            echo "❌ No index file found!" && exit 1
           fi
 
+          # ✅ Proper .htaccess (NO indentation)
           cat > deploy/.htaccess << 'EOF'
           <IfModule mod_rewrite.c>
-            RewriteEngine On
-            RewriteBase /
-            RewriteRule ^index\.html$ - [L]
-            RewriteCond %{REQUEST_FILENAME} !-f
-            RewriteCond %{REQUEST_FILENAME} !-d
-            RewriteRule . /index.html [L]
+          RewriteEngine On
+          RewriteBase /
+          RewriteRule ^index\.html$ - [L]
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule . /index.html [L]
           </IfModule>
           EOF
 
@@ -63,7 +69,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          protocol: ftp
+          protocol: ftps   # ✅ use FTPS
           local-dir: deploy/
           server-dir: /htdocs/
           dangerous-clean-slate: true
