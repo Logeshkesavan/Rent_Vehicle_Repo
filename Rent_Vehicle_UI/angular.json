@@ -47,7 +47,15 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "configurations": {
+            "production": {
+              "buildTarget": "Rent_Vehicle_UI:build:production"
+            },
+            "development": {
+              "buildTarget": "Rent_Vehicle_UI:build:development"
+            }
+          }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma"
