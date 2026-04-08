@@ -1,0 +1,74 @@
+name: Deploy .NET API to MonsterASP
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'   # Change to your .NET version (6.0, 7.0, 8.0)
+
+      # 3️⃣ Restore dependencies
+      - name: Restore dependencies
+        working-directory: Rent_Vehicle_API
+        run: dotnet restore
+
+      # 4️⃣ Build the project
+      - name: Build
+        working-directory: Rent_Vehicle_API
+        run: dotnet build --configuration Release --no-restore
+
+      # 5️⃣ Publish the project
+      - name: Publish
+        working-directory: Rent_Vehicle_API
+        run: dotnet publish --configuration Release --no-build --output ./publish
+
+      # 6️⃣ Show publish output (optional debug)
+      - name: Show publish output
+        run: find Rent_Vehicle_API/publish -type f
+
+      # 7️⃣ Add web.config for .NET routing (MonsterASP requires this)
+      - name: Add web.config
+        run: |
+          cat > Rent_Vehicle_API/publish/web.config << 'WEBCONFIG'
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <system.webServer>
+              <handlers>
+                <add name="aspNetCore" path="*" verb="*"
+                     modules="AspNetCoreModuleV2"
+                     resourceType="Unspecified" />
+              </handlers>
+              <aspNetCore processPath="dotnet"
+                          arguments=".\Rent_Vehicle_API.dll"
+                          stdoutLogEnabled="true"
+                          stdoutLogFile=".\logs\stdout"
+                          hostingModel="inprocess" />
+            </system.webServer>
+          </configuration>
+          WEBCONFIG
+
+      # 8️⃣ Deploy to MonsterASP via FTP
+      - name: Deploy to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: site62384.siteasp.net               # MonsterASP FTP host
+          username: ${{ secrets.FTP_USERNAME_API }}
+          password: ${{ secrets.FTP_PASSWORD_API }}
+          port: 21
+          protocol: ftp
+          local-dir: Rent_Vehicle_API/publish/
+          server-dir: /wwwroot/               # MonsterASP backend root
+          dangerous-clean-slate: true
