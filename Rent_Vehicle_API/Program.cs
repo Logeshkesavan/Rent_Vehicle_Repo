@@ -59,7 +59,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "http://localhost:4200",
-                "https://rentvehicle.runasp.net"
+                "https://rentvehicle.runasp.net",
+                "https://rentvehicle.infinityfreeapp.com"
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
