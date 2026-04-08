@@ -1,3 +1,4 @@
+
 name: Deploy .NET API to MonsterASP
 
 on:
@@ -25,25 +26,19 @@ jobs:
         working-directory: Rent_Vehicle_API
         run: dotnet restore
 
-      # 4️⃣ Build
-      - name: Build
-        working-directory: Rent_Vehicle_API
-        run: dotnet build --configuration Release --no-restore
-
-      # 5️⃣ Publish as DLL (NOT self-contained, NOT exe) for MonsterASP InProcess
+      # 4️⃣ Publish as self-contained win-x64 (bundles runtime, no server dependency)
       - name: Publish
         working-directory: Rent_Vehicle_API
         run: >
           dotnet publish
           --configuration Release
-          --no-build
+          --runtime win-x64
+          --self-contained true
           --output ./publish
+          -p:PublishSingleFile=false
+          -p:PublishTrimmed=false
 
-      # 6️⃣ Show publish output
-      - name: Show publish output
-        run: find Rent_Vehicle_API/publish -type f
-
-      # 7️⃣ Add web.config (InProcess + DLL = correct for MonsterASP)
+      # 5️⃣ Add web.config (InProcess + EXE for self-contained win-x64)
       - name: Add web.config
         run: |
           printf '%s\n' \
@@ -53,16 +48,40 @@ jobs:
             '    <handlers>' \
             '      <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />' \
             '    </handlers>' \
-            '    <aspNetCore processPath="dotnet"' \
-            '                arguments=".\Rent_Vehicle_API.dll"' \
+            '    <aspNetCore processPath=".\Rent_Vehicle_API.exe"' \
             '                stdoutLogEnabled="true"' \
             '                stdoutLogFile=".\logs\stdout"' \
             '                hostingModel="inprocess" />' \
             '  </system.webServer>' \
             '</configuration>' > Rent_Vehicle_API/publish/web.config
 
-      # 8️⃣ Deploy to MonsterASP via FTP
-      - name: Deploy to FTP
+      # 6️⃣ Create app_offline.htm to gracefully stop site before upload
+      - name: Create app_offline.htm
+        run: echo "<h1>Deploying, please wait...</h1>" > Rent_Vehicle_API/publish/app_offline.htm
+
+      # 7️⃣ Show publish output
+      - name: Show publish output
+        run: find Rent_Vehicle_API/publish -type f | head -30
+
+      # 8️⃣ Upload app_offline.htm FIRST to unlock files on server
+      - name: Upload app_offline to stop site
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: site62384.siteasp.net
+          username: site62384
+          password: ${{ secrets.FTP_PASSWORD_API }}
+          port: 21
+          protocol: ftp
+          local-dir: Rent_Vehicle_API/publish/
+          server-dir: /wwwroot/
+          include: app_offline.htm
+
+      # 9️⃣ Wait for site to go offline
+      - name: Wait for site to stop
+        run: sleep 5
+
+      # 🔟 Deploy full app
+      - name: Deploy full app to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: site62384.siteasp.net
@@ -73,3 +92,5 @@ jobs:
           local-dir: Rent_Vehicle_API/publish/
           server-dir: /wwwroot/
           dangerous-clean-slate: true
+          exclude: |
+            app_offline.htm
