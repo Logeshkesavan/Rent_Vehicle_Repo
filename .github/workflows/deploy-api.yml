@@ -25,19 +25,16 @@ jobs:
         working-directory: Rent_Vehicle_API
         run: dotnet restore
 
-      # 4️⃣ Build the project
-      - name: Build
-        working-directory: Rent_Vehicle_API
-        run: dotnet build --configuration Release --no-restore
+      # 4️⃣ Build & Restore are handled by publish (self-contained)
 
-      # 5️⃣ Publish the project
+      # 5️⃣ Publish the project (framework-dependent, MonsterASP has .NET 8 runtime)
       - name: Publish
         working-directory: Rent_Vehicle_API
-        run: dotnet publish --configuration Release --no-build --output ./publish
+        run: dotnet publish --configuration Release --no-self-contained --runtime win-x86 --output ./publish
 
       # 6️⃣ Show publish output (optional debug)
       - name: Show publish output
-        run: find Rent_Vehicle_API/publish -type f
+        run: find Rent_Vehicle_API/publish -type f | head -50
 
       # 7️⃣ Add web.config for .NET routing (MonsterASP requires this)
       - name: Add web.config
@@ -52,7 +49,7 @@ jobs:
                      resourceType="Unspecified" />
               </handlers>
               <aspNetCore processPath="dotnet"
-                          arguments=".\Rent_Vehicle_API.dll"
+                          arguments=".\Rent_Vehicle.dll"
                           stdoutLogEnabled="true"
                           stdoutLogFile=".\logs\stdout"
                           hostingModel="inprocess" />
