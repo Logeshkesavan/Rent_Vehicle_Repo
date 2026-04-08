@@ -60,7 +60,19 @@ jobs:
           </configuration>
           WEBCONFIG
 
-      # 8️⃣ Deploy to MonsterASP via FTP
+      # 8️⃣ Take app offline so IIS releases DLL file locks
+      - name: Take app offline
+        run: |
+          echo '<html><body><h2>Deployment in progress...</h2></body></html>' > app_offline.htm
+          curl --ftp-create-dirs --silent --show-error \
+            --user "${{ secrets.FTP_USERNAME_API }}:${{ secrets.FTP_PASSWORD_API }}" \
+            -T app_offline.htm \
+            "ftp://site62384.siteasp.net/wwwroot/app_offline.htm"
+
+      - name: Wait for app pool to recycle
+        run: sleep 15
+
+      # 9️⃣ Deploy to MonsterASP via FTP
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -72,3 +84,11 @@ jobs:
           local-dir: Rent_Vehicle_API/publish/
           server-dir: /wwwroot/               # MonsterASP backend root
           dangerous-clean-slate: true
+
+      # 🔟 Bring app back online
+      - name: Bring app back online
+        run: |
+          curl --silent --show-error \
+            --user "${{ secrets.FTP_USERNAME_API }}:${{ secrets.FTP_PASSWORD_API }}" \
+            -Q "DELE /wwwroot/app_offline.htm" \
+            "ftp://site62384.siteasp.net/"
