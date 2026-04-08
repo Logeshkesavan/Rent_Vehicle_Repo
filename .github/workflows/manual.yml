@@ -29,32 +29,18 @@ jobs:
       - name: Show build output
         run: find Rent_Vehicle_UI/dist -type f
 
-      - name: Prepare deploy folder
+      - name: Add .htaccess for Angular routing
         run: |
-          BROWSER_DIR=$(find Rent_Vehicle_UI/dist -type d -name browser | head -n 1)
-          echo "Browser dir: $BROWSER_DIR"
-
-          mkdir -p deploy
-
-          cp -r "$BROWSER_DIR/"* deploy/
-
-          if [ -f "$BROWSER_DIR/index.csr.html" ]; then
-            cp "$BROWSER_DIR/index.csr.html" deploy/index.html
-          fi
-
-          cat > deploy/.htaccess << 'EOF'
-          <IfModule mod_rewrite.c>
-            RewriteEngine On
-            RewriteBase /
-            RewriteRule ^index\.html$ - [L]
-            RewriteCond %{REQUEST_FILENAME} !-f
-            RewriteCond %{REQUEST_FILENAME} !-d
-            RewriteRule . /index.html [L]
-          </IfModule>
-          EOF
-
-          echo "Deploy folder contents:"
-          ls -la deploy
+          cat > Rent_Vehicle_UI/dist/Rent_Vehicle_UI/.htaccess << 'EOF'
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+</IfModule>
+EOF
 
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -64,6 +50,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
           protocol: ftp
-          local-dir: deploy/
+          local-dir: Rent_Vehicle_UI/dist/Rent_Vehicle_UI/
           server-dir: /htdocs/
           dangerous-clean-slate: true
