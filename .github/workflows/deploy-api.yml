@@ -5,165 +5,67 @@ on:
     branches:
       - develop
 
-permissions:
-  contents: read
-
 jobs:
   build-and-deploy:
-    name: Deploy Backend to MonsterASP.NET via FTP
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup .NET 8
+      # 2️⃣ Setup .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0'
+          dotnet-version: '8.0.x'   # Change to your .NET version (6.0, 7.0, 8.0)
 
-      # 3️⃣ Restore
+      # 3️⃣ Restore dependencies
       - name: Restore dependencies
         working-directory: Rent_Vehicle_API
         run: dotnet restore
 
-      # 4️⃣ Publish framework-dependent (no runtime prefix = pure DLL deploy)
+      # 4️⃣ Build & Restore are handled by publish (self-contained)
+
+      # 5️⃣ Publish the project (self-contained so .NET runtime is bundled)
       - name: Publish
         working-directory: Rent_Vehicle_API
-        run: >
-          dotnet publish
-          --configuration Release
-          --output ./publish
-          --no-self-contained
+        run: dotnet publish --configuration Release --runtime win-x64 --self-contained true --output ./publish
 
-      # 5️⃣ Print auto-generated web.config (so we can debug)
-      - name: Print generated web.config
-        shell: powershell
-        run: Get-Content "Rent_Vehicle_API/publish/web.config"
+      # 6️⃣ Show publish output (optional debug)
+      - name: Show publish output
+        run: find Rent_Vehicle_API/publish -type f | head -50
 
-      # 6️⃣ Overwrite web.config with explicit safe version
-      - name: Write web.config
-        shell: powershell
+      # 7️⃣ Add web.config for .NET routing (MonsterASP requires this)
+      - name: Add web.config
         run: |
-          $webconfig = @"
+          cat > Rent_Vehicle_API/publish/web.config << 'WEBCONFIG'
           <?xml version="1.0" encoding="utf-8"?>
           <configuration>
-            <location path="." inheritInChildApplications="false">
-              <system.webServer>
-                <handlers>
-                  <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
-                </handlers>
-                <aspNetCore processPath="dotnet"
-                            arguments=".\Rent_Vehicle_API.dll"
-                            stdoutLogEnabled="true"
-                            stdoutLogFile=".\logs\stdout"
-                            hostingModel="inprocess">
-                  <environmentVariables>
-                    <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" />
-                  </environmentVariables>
-                </aspNetCore>
-              </system.webServer>
-            </location>
+            <system.webServer>
+              <handlers>
+                <add name="aspNetCore" path="*" verb="*"
+                     modules="AspNetCoreModuleV2"
+                     resourceType="Unspecified" />
+              </handlers>
+              <aspNetCore processPath=".\Rent_Vehicle.exe"
+                          arguments=""
+                          stdoutLogEnabled="true"
+                          stdoutLogFile=".\logs\stdout"
+                          hostingModel="OutOfProcess" />
+            </system.webServer>
           </configuration>
-          "@
-          $webconfig | Out-File -FilePath "Rent_Vehicle_API/publish/web.config" -Encoding utf8
-          Write-Host "web.config written"
-          Get-Content "Rent_Vehicle_API/publish/web.config"
+          WEBCONFIG
 
-      # 7️⃣ Verify DLL exists
-      - name: Verify DLL exists
-        shell: powershell
-        run: |
-          $dll = "Rent_Vehicle_API/publish/Rent_Vehicle_API.dll"
-          if (Test-Path $dll) {
-            Write-Host "✅ DLL found: $dll"
-          } else {
-            Write-Host "❌ DLL NOT found! Listing publish folder:"
-            Get-ChildItem "Rent_Vehicle_API/publish" | Select-Object Name
-            exit 1
-          }
-
-      # 8️⃣ Take app offline
-      - name: Take app offline
-        shell: powershell
-        run: |
-          $content = "<html><body><h2>Deployment in progress...</h2></body></html>"
-          $content | Out-File -FilePath "./app_offline.htm" -Encoding utf8
-          & curl.exe --ftp-create-dirs --silent --show-error `
-            --user "${{ secrets.FTP_USERNAME_API }}:${{ secrets.FTP_PASSWORD_API }}" `
-            -T "./app_offline.htm" `
-            "ftp://site62384.siteasp.net/wwwroot/app_offline.htm"
-          Write-Host "App is offline"
-
-      # 9️⃣ Wait for app pool to recycle
-      - name: Wait for app pool to recycle
-        shell: powershell
-        run: Start-Sleep -Seconds 15
-
-      # 🔟 Deploy all files with retry
-      - name: Deploy all files
-        shell: powershell
-        run: |
-          $ftpHost    = "ftp://site62384.siteasp.net"
-          $ftpUser    = "${{ secrets.FTP_USERNAME_API }}"
-          $ftpPass    = "${{ secrets.FTP_PASSWORD_API }}"
-          $localDir   = (Resolve-Path "Rent_Vehicle_API/publish").Path
-          $remoteBase = "/wwwroot"
-          $maxRetries = 5
-          $retryDelay = 10
-
-          $files = Get-ChildItem -Path $localDir -Recurse -File
-          foreach ($file in $files) {
-            $relativePath = $file.FullName.Substring($localDir.Length).Replace("\", "/")
-            $remoteUrl    = "$ftpHost$remoteBase$relativePath"
-            $attempt      = 0
-            $uploaded     = $false
-
-            while (-not $uploaded -and $attempt -lt $maxRetries) {
-              $attempt++
-              Write-Host "Uploading (attempt $attempt): $relativePath"
-              & curl.exe --ftp-create-dirs --silent --show-error --retry 0 `
-                --user "${ftpUser}:${ftpPass}" `
-                -T $file.FullName $remoteUrl
-              $exitCode = $LASTEXITCODE
-
-              if ($exitCode -eq 0) {
-                Write-Host "✅ OK: $relativePath"
-                $uploaded = $true
-              } else {
-                Write-Host "❌ Failed (exit $exitCode): $relativePath"
-                if ($attempt -lt $maxRetries) {
-                  Write-Host "Retrying in $retryDelay seconds..."
-                  Start-Sleep -Seconds $retryDelay
-                } else {
-                  Write-Host "FAILED after $maxRetries attempts: $relativePath"
-                  exit 1
-                }
-              }
-            }
-          }
-          Write-Host "✅ All files uploaded"
-
-      # 1️⃣1️⃣ Bring app back online
-      - name: Bring app back online
-        shell: powershell
-        run: |
-          & curl.exe --silent --show-error `
-            --user "${{ secrets.FTP_USERNAME_API }}:${{ secrets.FTP_PASSWORD_API }}" `
-            -Q "DELE /wwwroot/app_offline.htm" `
-            "ftp://site62384.siteasp.net/"
-          Write-Host "✅ App is back online"
-
-      # 1️⃣2️⃣ Deployment summary
-      - name: Deployment summary
-        if: success()
-        shell: bash
-        run: |
-          echo "### Backend Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status:** Success" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Timestamp:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "- **Runtime:** Framework-dependent .NET 8" >> $GITHUB_STEP_SUMMARY
+      # 8️⃣ Deploy to MonsterASP via FTP
+      - name: Deploy to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: site62384.siteasp.net               # MonsterASP FTP host
+          username: ${{ secrets.FTP_USERNAME_API }}
+          password: ${{ secrets.FTP_PASSWORD_API }}
+          port: 21
+          protocol: ftp
+          local-dir: Rent_Vehicle_API/publish/
+          server-dir: /wwwroot/               # MonsterASP backend root
+          dangerous-clean-slate: true
