@@ -8,42 +8,29 @@
   "projects": {
     "Rent_Vehicle_UI": {
       "projectType": "application",
-      "schematics": {},
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular/build:application",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "browser": "src/main.ts",
+            "outputPath": "dist/Rent_Vehicle_UI",
+            "index": "src/index.html",
+            "main": "src/main.ts",          
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
+              { "glob": "**/*", "input": "public", "output": "/" },
+              { "glob": "favicon.ico", "input": "src", "output": "/" }
             ],
-            "styles": [
-              "src/styles.css"
-            ],
-            "outputPath": "dist/Rent_Vehicle_UI/browser"
+            "styles": ["src/styles.css"],
+            "scripts": []
           },
           "configurations": {
             "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
-              ],
+              "optimization": true,
               "outputHashing": "all",
+              "sourceMap": false,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -53,26 +40,17 @@
             },
             "development": {
               "optimization": false,
-              "extractLicenses": false,
               "sourceMap": true
             }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular/build:dev-server",
-          "configurations": {
-            "production": {
-              "buildTarget": "Rent_Vehicle_UI:build:production"
-            },
-            "development": {
-              "buildTarget": "Rent_Vehicle_UI:build:development"
-            }
-          },
+          "builder": "@angular-devkit/build-angular:dev-server",
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular-devkit/build-angular:karma"
         }
       }
     }
