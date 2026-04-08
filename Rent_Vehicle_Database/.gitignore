@@ -1,13 +1,18 @@
 # SQL Server Database Project
 bin/
 obj/
+sql/
 *.dbmdl
 *.deploymanifest
 *.dbproj.sql
-sql/
 *.dacpac
 *.jfm
 .vs/
+*.user
 
-# Local publish profiles (keep template only)
+# Local publish profiles (keep in local only)
 *.publish.xml
+
+# Build artifacts
+Import Schema Logs/
+
