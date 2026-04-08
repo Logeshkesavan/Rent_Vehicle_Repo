@@ -1,0 +1,13 @@
+# SQL Server Database Project
+bin/
+obj/
+*.dbmdl
+*.deploymanifest
+*.dbproj.sql
+sql/
+*.dacpac
+*.jfm
+.vs/
+
+# Local publish profiles (keep template only)
+*.publish.xml
