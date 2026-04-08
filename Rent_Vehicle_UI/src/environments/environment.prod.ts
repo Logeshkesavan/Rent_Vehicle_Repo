@@ -1,5 +1,5 @@
 // Production environment configuration
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://api.yourdomainname.com/api'  // Update with your production API URL
+  apiBaseUrl: 'https://rentvehicle.runasp.net/api'  // Update with your production API URL
 };

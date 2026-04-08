@@ -55,9 +55,12 @@ builder.Services.AddAuthorization();
 // Add CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular", builder =>
+    options.AddPolicy("AllowAngular", policy =>
     {
-        builder.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(
+                "http://localhost:4200",
+                "https://rentvehicle.runasp.net"
+            )
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
@@ -74,19 +77,11 @@ builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwagger();
+app.UseSwaggerUI();
 
-    //// Seed database in development
-    //using (var scope = app.Services.CreateScope())
-    //{
-    //    var dbContext = scope.ServiceProvider.GetRequiredService<VehicleRentalDbContext>();
-    //    dbContext.Database.EnsureCreated();
-    //    DatabaseSeeder.SeedData(dbContext);
-    //}
-}
+// Redirect root to Swagger UI
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 
 
