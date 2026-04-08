@@ -23,14 +23,12 @@ jobs:
       # 3️⃣ Restore dependencies
       - name: Restore dependencies
         working-directory: Rent_Vehicle_API
-        run: dotnet restore
+        run: dotnet restore Rent_Vehicle.csproj
 
-      # 4️⃣ Build & Restore are handled by publish (self-contained)
-
-      # 5️⃣ Publish the project (framework-dependent, MonsterASP has .NET 8 runtime)
+      # 4️⃣ Publish the project (framework-dependent, MonsterASP has .NET 8 runtime)
       - name: Publish
         working-directory: Rent_Vehicle_API
-        run: dotnet publish --configuration Release --no-self-contained --runtime win-x86 --output ./publish
+        run: dotnet publish Rent_Vehicle.csproj --configuration Release --no-self-contained --runtime win-x86 --output ./publish
 
       # 6️⃣ Show publish output (optional debug)
       - name: Show publish output
