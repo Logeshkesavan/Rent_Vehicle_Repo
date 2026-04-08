@@ -32,13 +32,13 @@ jobs:
 
       # 4️⃣ Show build output
       - name: Show build output
-        run: dir Rent_Vehicle_Database\bin\Release\*.dacpac
+        run: dir Rent_Vehicle_Database\sql\release\*.dacpac
 
       # 5️⃣ Deploy Database to Azure SQL
       - name: Deploy Database to Azure SQL
         run: |
           $ConnectionString = "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
-          $DacpacPath = "Rent_Vehicle_Database\bin\Release\Rent_Vehicle_Database.dacpac"
+          $DacpacPath = "Rent_Vehicle_Database\sql\release\Rent_Vehicle_Database.dacpac"
           
           sqlpackage.exe /Action:Publish `
             /SourceFile:"$DacpacPath" `
