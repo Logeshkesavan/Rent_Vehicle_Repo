@@ -27,10 +27,10 @@ jobs:
 
       # 4️⃣ Build & Restore are handled by publish (self-contained)
 
-      # 5️⃣ Publish the project (self-contained so .NET runtime is bundled)
+      # 5️⃣ Publish the project (framework-dependent, MonsterASP has .NET 8 runtime)
       - name: Publish
         working-directory: Rent_Vehicle_API
-        run: dotnet publish --configuration Release --runtime win-x64 --self-contained true --output ./publish
+        run: dotnet publish --configuration Release --no-self-contained --runtime win-x86 --output ./publish
 
       # 6️⃣ Show publish output (optional debug)
       - name: Show publish output
@@ -48,11 +48,11 @@ jobs:
                      modules="AspNetCoreModuleV2"
                      resourceType="Unspecified" />
               </handlers>
-              <aspNetCore processPath=".\Rent_Vehicle.exe"
-                          arguments=""
+              <aspNetCore processPath="dotnet"
+                          arguments=".\Rent_Vehicle.dll"
                           stdoutLogEnabled="true"
                           stdoutLogFile=".\logs\stdout"
-                          hostingModel="OutOfProcess" />
+                          hostingModel="inprocess" />
             </system.webServer>
           </configuration>
           WEBCONFIG
